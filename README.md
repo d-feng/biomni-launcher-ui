@@ -1,6 +1,6 @@
 # Biomni Launcher UI
 
-A Tkinter desktop UI to run [Biomni](https://github.com/snap-stanford/Biomni) agentic biomedical workflows without a web server.
+A Tkinter desktop UI to run [Biomni](https://github.com/snap-stanford/Biomni) agentic biomedical workflows without a web server. Features project-based memory with semantic search and result review.
 
 ## Requirements
 
@@ -31,7 +31,7 @@ chmod +x setup_venv.sh
 ./setup_venv.sh
 ```
 
-This installs all dependencies (biomni, langgraph, torch, pyarrow) into an isolated `venv/` folder.
+This installs all dependencies (biomni, langgraph, chromadb, torch, pyarrow) into an isolated `venv/` folder.
 
 ## How to Run
 
@@ -62,6 +62,41 @@ python biomni_launcher.py
 | Live output | Scrollable terminal-style output panel |
 | Log files | Saved to `~/biomni_logs/biomni_{GENE}_{timestamp}.txt` |
 | Stop button | Terminate agent mid-run |
+| Project memory | Isolated per-project semantic memory (ChromaDB) |
+| Auto-include memory | Auto-searches and injects relevant past results before each run |
+| Results Review | Keep or Delete popup after each run — only kept results used in future |
+| Results Manager | Browse, filter, view, and delete kept results per project |
+
+## Projects
+
+Use the **Project** dropdown in the configuration bar to organize runs:
+
+- Each project has its own isolated memory — no cross-contamination between projects
+- Select an existing project or create a new one via **＋ New Project…**
+- All memory search and injection is scoped to the active project
+
+## Memory System
+
+Memory is powered by [ChromaDB](https://www.trychroma.com/) with the `all-MiniLM-L6-v2` embedding model (downloaded once, ~79MB, cached at `~/.cache/chroma/`).
+
+**How it works:**
+1. Click **▶ Start Workflow** — memory auto-searches the current project for relevant past runs
+2. Top 3 semantically similar kept results appear in the **Memory panel** with checkboxes pre-checked
+3. Checked entries are injected into the prompt as context before the agent runs
+4. After the run completes, a **Results Review** popup shows the extracted solution
+5. Click **Keep** (saved to project memory, used in future runs) or **Delete** (discarded)
+
+**Toggle auto-injection:** Use the **"Auto-include memory"** checkbox in the configuration bar to enable/disable injection without clearing results.
+
+**Manual search:** Type a query in the Memory panel search bar and click **Search**, or click **Recent** to find results matching the current gene.
+
+## Results Manager
+
+Click **Results Manager** in the action bar to:
+- View all kept results for the current project
+- Filter by gene symbol
+- View the full solution summary
+- Delete entries
 
 ## Data Sources
 
@@ -69,9 +104,11 @@ Use the **Data Sources** panel to save frequently used datasets (local paths or 
 Click any entry to append it to the prompt text.
 Sources are saved globally to `~/biomni_data_sources.json`.
 
-## Logs
+## File Locations
 
-All run outputs are saved to:
-```
-~/biomni_logs/biomni_{GENE}_{timestamp}.txt
-```
+| File | Path |
+|------|------|
+| Run logs | `~/biomni_logs/biomni_{GENE}_{timestamp}.txt` |
+| Memory database | `~/biomni_memory/` |
+| Data sources | `~/biomni_data_sources.json` |
+| Projects list | `~/biomni_projects.json` |
