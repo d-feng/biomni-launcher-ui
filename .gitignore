@@ -1,0 +1,8 @@
+venv/
+data/
+*.png
+*.jpg
+__pycache__/
+*.pyc
+.env
+~/biomni_logs/
